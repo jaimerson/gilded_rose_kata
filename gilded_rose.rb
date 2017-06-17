@@ -1,25 +1,15 @@
 def update_quality(items)
-  items.each do |item|
+  items.map { |i| ItemContainer.new(i) }.each do |item|
     if item.name != 'Aged Brie' && item.name != 'Backstage passes to a TAFKAL80ETC concert'
-      if item.quality > 0
-        if item.name != 'Sulfuras, Hand of Ragnaros'
-          item.quality -= 1
-        end
-      end
+      item.decrease_quality
     else
-      if item.quality < 50
-        item.quality += 1
-        if item.name == 'Backstage passes to a TAFKAL80ETC concert'
-          if item.sell_in < 11
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
-          if item.sell_in < 6
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
+      item.increase_quality
+      if item.name == 'Backstage passes to a TAFKAL80ETC concert'
+        if item.sell_in < 11
+          item.increase_quality
+        end
+        if item.sell_in < 6
+          item.increase_quality
         end
       end
     end
@@ -29,20 +19,32 @@ def update_quality(items)
     if item.sell_in < 0
       if item.name != "Aged Brie"
         if item.name != 'Backstage passes to a TAFKAL80ETC concert'
-          if item.quality > 0
-            if item.name != 'Sulfuras, Hand of Ragnaros'
-              item.quality -= 1
-            end
-          end
+          item.decrease_quality
         else
-          item.quality = item.quality - item.quality
+          item.quality = 0
         end
       else
-        if item.quality < 50
-          item.quality += 1
-        end
+        item.increase_quality
       end
     end
+  end
+end
+
+ItemContainer = Class.new(SimpleDelegator) do
+  def decrease_quality
+    if self.quality > 0 && !self.legendary?
+      self.quality -= 1
+    end
+  end
+
+  def increase_quality
+    if self.quality < 50
+      self.quality += 1
+    end
+  end
+
+  def legendary?
+    self.name == 'Sulfuras, Hand of Ragnaros'
   end
 end
 
