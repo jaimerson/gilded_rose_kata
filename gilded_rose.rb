@@ -1,15 +1,38 @@
+SULFURAS = 'Sulfuras, Hand of Ragnaros'
+BACKSTAGE = 'Backstage passes to a TAFKAL80ETC concert'
+AGED_BRIE = 'Aged Brie'
+
+class ItemDecorator < SimpleDelegator
+  def self.decorate_collection(items)
+    items.map { |i| new(i) }
+  end
+
+  def legendary?
+    name == SULFURAS
+  end
+
+  def common?
+    !legendary?
+  end
+
+  def backstage?
+    name == BACKSTAGE
+  end
+
+  def ages_like_wine?
+    name == AGED_BRIE
+  end
+end
+
 def update_quality(items)
-  items.each do |item|
-    if item.name != 'Aged Brie' && item.name != 'Backstage passes to a TAFKAL80ETC concert'
+  ItemDecorator.decorate_collection(items).each do |item|
+    if !item.ages_like_wine? && !item.backstage?
       if item.quality > 0
-        if item.name != 'Sulfuras, Hand of Ragnaros'
-          item.quality -= 1
-        end
       end
     else
       if item.quality < 50
         item.quality += 1
-        if item.name == 'Backstage passes to a TAFKAL80ETC concert'
+        if item.backstage?
           if item.sell_in < 11
             if item.quality < 50
               item.quality += 1
@@ -23,14 +46,14 @@ def update_quality(items)
         end
       end
     end
-    if item.name != 'Sulfuras, Hand of Ragnaros'
+    if item.common?
       item.sell_in -= 1
     end
     if item.sell_in < 0
-      if item.name != "Aged Brie"
-        if item.name != 'Backstage passes to a TAFKAL80ETC concert'
+      if !item.ages_like_wine?
+        if !item.backstage?
           if item.quality > 0
-            if item.name != 'Sulfuras, Hand of Ragnaros'
+            if item.common?
               item.quality -= 1
             end
           end
