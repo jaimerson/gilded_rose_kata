@@ -25,6 +25,10 @@ class ItemInformation
     item.sell_in = aging_schema.next_sell_in
   end
 
+  def conjured?
+    item.name.match?(/^conjured/i)
+  end
+
   def legendary?
     LEGENDARY_ITEMS.include?(item.name)
   end
@@ -50,6 +54,7 @@ module AgingSchema
 
   class << self
     def for(item_information)
+      return ConjuredAgingSchema if item_information.conjured?
       return LegendaryAgingSchema if item_information.legendary?
       return ValueIncreasingWithAgeAgingSchema if item_information.quality_increases_with_time?
       return ValueIncreasesUntilSellDateAgingSchema if item_information.quality_increases_then_drops?
@@ -81,6 +86,14 @@ module AgingSchema
       return AgingSchema::REGULAR_QUALITY_CHANGE_AMOUNT if item.sell_in > 0
 
       AgingSchema::PAST_SELL_IN_QUALITY_CHANGE_AMOUNT
+    end
+  end
+
+  class ConjuredAgingSchema < DefaultAgingSchema
+    private
+
+    def quality_change_amount
+      super * 2
     end
   end
 
