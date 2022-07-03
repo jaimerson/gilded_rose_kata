@@ -6,11 +6,11 @@ class ItemInformation
     'Sulfuras, Hand of Ragnaros'
   ].freeze
 
-  AGES_LIKE_WINE = [
+  MORE_VALUABLE_WITH_TIME = [
     'Aged Brie'
   ].freeze
 
-  QUALITY_INCREASES_THEN_DROPS = [
+  MORE_VALUABLE_UNTIL_EXPIRED = [
     'Backstage passes to a TAFKAL80ETC concert'
   ].freeze
 
@@ -34,11 +34,11 @@ class ItemInformation
   end
 
   def quality_increases_with_time?
-    AGES_LIKE_WINE.include?(item.name)
+    MORE_VALUABLE_WITH_TIME.include?(item.name)
   end
 
-  def quality_increases_then_drops?
-    QUALITY_INCREASES_THEN_DROPS.include?(item.name)
+  def more_valuable_until_expired?
+    MORE_VALUABLE_UNTIL_EXPIRED.include?(item.name)
   end
 
   private
@@ -57,7 +57,7 @@ module AgingSchema
       return ConjuredAgingSchema if item_information.conjured?
       return LegendaryAgingSchema if item_information.legendary?
       return ValueIncreasingWithAgeAgingSchema if item_information.quality_increases_with_time?
-      return ValueIncreasesUntilSellDateAgingSchema if item_information.quality_increases_then_drops?
+      return ValueIncreasesUntilSellDateAgingSchema if item_information.more_valuable_until_expired?
 
       DefaultAgingSchema
     end
