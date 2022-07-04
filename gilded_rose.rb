@@ -1,48 +1,76 @@
 def update_quality(items)
-  items.each do |item|
-    if item.name != 'Aged Brie' && item.name != 'Backstage passes to a TAFKAL80ETC concert'
-      if item.quality > 0
-        if item.name != 'Sulfuras, Hand of Ragnaros'
-          item.quality -= 1
-        end
-      end
-    else
-      if item.quality < 50
-        item.quality += 1
-        if item.name == 'Backstage passes to a TAFKAL80ETC concert'
-          if item.sell_in < 11
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
-          if item.sell_in < 6
-            if item.quality < 50
-              item.quality += 1
-            end
-          end
-        end
-      end
-    end
-    if item.name != 'Sulfuras, Hand of Ragnaros'
-      item.sell_in -= 1
-    end
+  items.map { |i| ItemContainer.new(i) }.each do |item|
+    item.update
     if item.sell_in < 0
       if item.name != "Aged Brie"
         if item.name != 'Backstage passes to a TAFKAL80ETC concert'
-          if item.quality > 0
-            if item.name != 'Sulfuras, Hand of Ragnaros'
-              item.quality -= 1
-            end
-          end
+          item.decrease_quality
         else
-          item.quality = item.quality - item.quality
+          item.quality = 0
         end
       else
-        if item.quality < 50
-          item.quality += 1
-        end
+        item.increase_quality
       end
     end
+  end
+end
+
+ItemContainer = Class.new(SimpleDelegator) do
+  MINIMUM_QUALITY = 0
+  MAXIMUM_QUALITY = 50
+
+  def update
+    if self.ages_well? || self.ages_well_until_expired?
+      self.increase_quality(amount: amount_to_increase)
+    else
+      self.decrease_quality
+    end
+    decrease_sell_in
+  end
+
+  def decrease_quality(amount: 1)
+    if self.quality > MINIMUM_QUALITY && self.regular?
+      self.quality -= amount
+    end
+  end
+
+  def increase_quality(amount: 1)
+    if self.quality < MAXIMUM_QUALITY
+      self.quality += amount
+    end
+  end
+
+  def amount_to_increase
+    if self.ages_well_until_expired?
+      if self.sell_in < 6
+        return 3
+      elsif self.sell_in < 11
+        return 2
+      end
+    end
+    1
+  end
+
+  def decrease_sell_in
+    if self.regular?
+      self.sell_in -= 1
+    end
+  end
+
+  def regular?
+    !self.legendary?
+  end
+
+  def legendary?
+    self.name == 'Sulfuras, Hand of Ragnaros'
+  end
+
+  def ages_well?
+    self.name == 'Aged Brie'
+  end
+
+  def ages_well_until_expired?
+    self.name == 'Backstage passes to a TAFKAL80ETC concert'
   end
 end
 
